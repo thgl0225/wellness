@@ -480,19 +480,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // localStorage에서 데이터 로드
     loadFromLocalStorage();
     
+    // 현재 테마 버튼 초기화
+    const currentBtn = document.getElementById('theme-current');
+    currentBtn.className = `theme-btn-current theme-${currentTheme}`;
+    
     // 초기 렌더링
     renderGoals();
     
     // 테마 버튼
+    document.getElementById('theme-current').addEventListener('click', toggleThemeOptions);
+    
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const theme = this.getAttribute('data-theme');
             changeTheme(theme);
+            toggleThemeOptions();
         });
     });
     
     // 정렬 버튼
-    document.getElementById('sort-main-btn').addEventListener('click', toggleSortDropdown);
+    document.getElementById('sort-compact').addEventListener('click', toggleSortDropdown);
     
     document.querySelectorAll('.sort-option').forEach(option => {
         option.addEventListener('click', function() {
@@ -611,6 +618,22 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('modal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeModal();
+        }
+    });
+    
+    // 외부 클릭시 드롭다운 닫기
+    document.addEventListener('click', function(e) {
+        const sortDropdown = document.getElementById('sort-dropdown');
+        const sortCompact = document.getElementById('sort-compact');
+        const themeOptions = document.getElementById('theme-options');
+        const themeSelector = document.getElementById('theme-selector');
+        
+        if (!sortCompact.contains(e.target) && !sortDropdown.contains(e.target)) {
+            sortDropdown.classList.remove('active');
+        }
+        
+        if (!themeSelector.contains(e.target)) {
+            themeOptions.classList.remove('active');
         }
     });
 });
