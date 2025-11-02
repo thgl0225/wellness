@@ -1,11 +1,12 @@
+// 전역 변수
 let goals = [];
-
 let currentTheme = 'light';
 let selectedEmoji = 'target';
 let currentSort = 'default';
 let goalType = 'numeric';
 let editingGoalId = null;
 
+// 아이콘 SVG 데이터
 const iconSvgs = {
     book: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/></svg>',
     dumbbell: '<svg viewBox="0 0 24 24"><path d="M14.4 14.4 9.6 9.6M18.657 21.485c1.886-1.886 1.886-4.943 0-6.829l-1.414-1.414c-1.886-1.886-4.943-1.886-6.829 0l-1.414 1.414c-1.886 1.886-1.886 4.943 0 6.829l1.414 1.414c1.886 1.886 4.943 1.886 6.829 0l1.414-1.414ZM8.586 8.586c1.886-1.886 1.886-4.943 0-6.829L7.172.343c-1.886-1.886-4.943-1.886-6.829 0L-.071 1.757c-1.886 1.886-1.886 4.943 0 6.829l1.414 1.414c1.886 1.886 4.943 1.886 6.829 0l1.414-1.414Z"/></svg>',
@@ -33,6 +34,35 @@ const iconSvgs = {
     bike: '<svg viewBox="0 0 24 24"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>'
 };
 
+// localStorage 함수들
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('goals', JSON.stringify(goals));
+        localStorage.setItem('currentTheme', currentTheme);
+    } catch (e) {
+        console.error('localStorage 저장 실패:', e);
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        const savedGoals = localStorage.getItem('goals');
+        const savedTheme = localStorage.getItem('currentTheme');
+        
+        if (savedGoals) {
+            goals = JSON.parse(savedGoals);
+        }
+        
+        if (savedTheme) {
+            currentTheme = savedTheme;
+            changeTheme(currentTheme);
+        }
+    } catch (e) {
+        console.error('localStorage 로드 실패:', e);
+    }
+}
+
+// 초기화 함수
 function initEmojiPicker() {
     const picker = document.getElementById('emoji-picker');
     picker.innerHTML = '';
@@ -40,16 +70,16 @@ function initEmojiPicker() {
         const option = document.createElement('div');
         option.className = 'emoji-option';
         option.innerHTML = iconSvgs[iconName];
-        option.onclick = () => selectEmoji(iconName);
+        option.setAttribute('data-icon', iconName);
         picker.appendChild(option);
     });
 }
 
 function selectEmoji(iconName) {
     selectedEmoji = iconName;
-    document.querySelectorAll('.emoji-option').forEach((opt, index) => {
+    document.querySelectorAll('.emoji-option').forEach(opt => {
         opt.classList.remove('selected');
-        if (Object.keys(iconSvgs)[index] === iconName) {
+        if (opt.getAttribute('data-icon') === iconName) {
             opt.classList.add('selected');
         }
     });
@@ -68,8 +98,12 @@ function changeTheme(theme) {
     
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.classList.remove('active');
+        if (btn.getAttribute('data-theme') === theme) {
+            btn.classList.add('active');
+        }
     });
-    document.querySelector(`.theme-btn.theme-${theme}`).classList.add('active');
+    
+    saveToLocalStorage();
 }
 
 function getProgressBadge(percentage) {
@@ -152,6 +186,7 @@ function toggleSubtask(goalId, subtaskId) {
             if (oldProgress < 100 && newProgress >= 100) {
                 showCelebration();
             }
+            saveToLocalStorage();
             renderGoals();
         }
     }
@@ -161,6 +196,7 @@ function deleteSubtask(goalId, subtaskId) {
     const goal = goals.find(g => g.id === goalId);
     if (goal && goal.subtasks) {
         goal.subtasks = goal.subtasks.filter(st => st.id !== subtaskId);
+        saveToLocalStorage();
         renderGoals();
     }
 }
@@ -179,10 +215,13 @@ function addSubtask(goalId) {
                 completed: false
             });
             input.value = '';
+            saveToLocalStorage();
             renderGoals();
         }
     }
-    function renderGoals() {
+}
+
+function renderGoals() {
     const container = document.getElementById('goals-container');
     container.innerHTML = '';
 
@@ -206,10 +245,10 @@ function addSubtask(goalId) {
                     </div>
                 </div>
                 <div class="goal-actions">
-                    ${goal.type === 'checklist' ? `<button class="toggle-subtasks-btn" onclick="toggleSubtasks(${goal.id})">📋</button>` : ''}
+                    ${goal.type === 'checklist' ? `<button class="toggle-subtasks-btn" data-goal-id="${goal.id}" data-action="toggle-subtasks">📋</button>` : ''}
                     <div class="goal-percentage">${percentage}%</div>
-                    <button class="edit-btn" onclick="editGoal(${goal.id})">✏️</button>
-                    <button class="delete-btn" onclick="deleteGoal(${goal.id})">🗑️</button>
+                    <button class="edit-btn" data-goal-id="${goal.id}" data-action="edit">✏️</button>
+                    <button class="delete-btn" data-goal-id="${goal.id}" data-action="delete">🗑️</button>
                 </div>
             </div>
             <div class="progress-container">
@@ -222,7 +261,7 @@ function addSubtask(goalId) {
             const total = goal.target;
             const remaining = Math.max(0, total - completed);
             content += `
-                <div class="goal-stats" onclick="toggleStats(${goal.id})">
+                <div class="goal-stats" data-goal-id="${goal.id}" data-action="toggle-stats">
                     <div class="stats-main">현재 ${completed} / 목표 ${total} ▼</div>
                     <div class="stats-detail" id="stats-detail-${goal.id}">
                         <div class="stat">
@@ -245,7 +284,7 @@ function addSubtask(goalId) {
             const total = goal.subtasks ? goal.subtasks.length : 0;
             const remaining = total - completed;
             content += `
-                <div class="goal-stats" onclick="toggleStats(${goal.id})">
+                <div class="goal-stats" data-goal-id="${goal.id}" data-action="toggle-stats">
                     <div class="stats-main">완료 ${completed} / 전체 ${total} ▼</div>
                     <div class="stats-detail" id="stats-detail-${goal.id}">
                         <div class="stat">
@@ -272,12 +311,12 @@ function addSubtask(goalId) {
         if (goal.type === 'numeric') {
             content += `
                 <div class="button-group">
-                    <button class="btn-increase btn-small" onclick="updateGoal(${goal.id}, 1)">+1</button>
-                    <button class="btn-increase btn-main" onclick="updateGoal(${goal.id}, 5)">+5</button>
-                    <button class="btn-increase btn-main" onclick="updateGoal(${goal.id}, 10)">+10</button>
-                    <button class="btn-decrease btn-small" onclick="updateGoal(${goal.id}, -1)">-1</button>
-                    <button class="btn-decrease btn-small" onclick="updateGoal(${goal.id}, -5)">-5</button>
-                    <button class="btn-decrease btn-small" onclick="updateGoal(${goal.id}, -10)">-10</button>
+                    <button class="btn-increase btn-small" data-goal-id="${goal.id}" data-change="1">+1</button>
+                    <button class="btn-increase btn-main" data-goal-id="${goal.id}" data-change="5">+5</button>
+                    <button class="btn-increase btn-main" data-goal-id="${goal.id}" data-change="10">+10</button>
+                    <button class="btn-decrease btn-small" data-goal-id="${goal.id}" data-change="-1">-1</button>
+                    <button class="btn-decrease btn-small" data-goal-id="${goal.id}" data-change="-5">-5</button>
+                    <button class="btn-decrease btn-small" data-goal-id="${goal.id}" data-change="-10">-10</button>
                 </div>
             `;
         }
@@ -289,16 +328,17 @@ function addSubtask(goalId) {
                         <div class="subtask-item">
                             <input type="checkbox" class="subtask-checkbox" 
                                 ${subtask.completed ? 'checked' : ''} 
-                                onchange="toggleSubtask(${goal.id}, ${subtask.id})">
+                                data-goal-id="${goal.id}" 
+                                data-subtask-id="${subtask.id}">
                             <span class="subtask-text ${subtask.completed ? 'completed' : ''}">${subtask.text}</span>
-                            <button class="subtask-delete" onclick="deleteSubtask(${goal.id}, ${subtask.id})">✕</button>
+                            <button class="subtask-delete" data-goal-id="${goal.id}" data-subtask-id="${subtask.id}">✕</button>
                         </div>
                     `).join('')}
                     <div class="add-subtask-area">
                         <input type="text" class="subtask-input" id="subtask-input-${goal.id}" 
                             placeholder="새 할일 추가" 
-                            onkeypress="if(event.key==='Enter') addSubtask(${goal.id})">
-                        <button class="add-subtask-btn" onclick="addSubtask(${goal.id})">추가</button>
+                            data-goal-id="${goal.id}">
+                        <button class="add-subtask-btn" data-goal-id="${goal.id}">추가</button>
                     </div>
                 </div>
             `;
@@ -323,6 +363,7 @@ function updateGoal(id, change) {
             showCelebration();
         }
         
+        saveToLocalStorage();
         renderGoals();
     }
 }
@@ -333,7 +374,7 @@ function editGoal(id) {
 
     editingGoalId = id;
     document.getElementById('modal-title').textContent = '목표 수정하기';
-    document.querySelector('.btn-submit').textContent = '수정';
+    document.getElementById('btn-submit').textContent = '수정';
     
     selectGoalType(goal.type);
     selectEmoji(goal.emoji);
@@ -353,6 +394,7 @@ function editGoal(id) {
 function deleteGoal(id) {
     if (confirm('이 목표를 삭제하시겠습니까?')) {
         goals = goals.filter(g => g.id !== id);
+        saveToLocalStorage();
         renderGoals();
     }
 }
@@ -360,7 +402,7 @@ function deleteGoal(id) {
 function openModal() {
     editingGoalId = null;
     document.getElementById('modal-title').textContent = '새 목표 만들기';
-    document.querySelector('.btn-submit').textContent = '추가';
+    document.getElementById('btn-submit').textContent = '추가';
     document.getElementById('modal').classList.add('active');
     initEmojiPicker();
     selectEmoji('target');
@@ -386,7 +428,6 @@ function saveGoal() {
     }
 
     if (editingGoalId) {
-        // 수정 모드
         const goal = goals.find(g => g.id === editingGoalId);
         if (goal) {
             goal.name = name;
@@ -405,7 +446,6 @@ function saveGoal() {
             }
         }
     } else {
-        // 새로 만들기 모드
         const newGoal = {
             id: Date.now(),
             name: name,
@@ -430,10 +470,147 @@ function saveGoal() {
         goals.push(newGoal);
     }
     
+    saveToLocalStorage();
     renderGoals();
     closeModal();
 }
 
-// 초기 렌더링
-renderGoals();
-}
+// 이벤트 위임을 사용한 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', function() {
+    // localStorage에서 데이터 로드
+    loadFromLocalStorage();
+    
+    // 초기 렌더링
+    renderGoals();
+    
+    // 테마 버튼
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const theme = this.getAttribute('data-theme');
+            changeTheme(theme);
+        });
+    });
+    
+    // 정렬 버튼
+    document.getElementById('sort-main-btn').addEventListener('click', toggleSortDropdown);
+    
+    document.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const type = this.getAttribute('data-sort');
+            const label = this.getAttribute('data-label');
+            sortGoals(type, label);
+        });
+    });
+    
+    // 새 목표 추가 버튼
+    document.getElementById('add-goal-btn').addEventListener('click', openModal);
+    
+    // 모달 버튼
+    document.getElementById('btn-cancel').addEventListener('click', closeModal);
+    document.getElementById('btn-submit').addEventListener('click', saveGoal);
+    
+    // 목표 유형 선택
+    document.querySelectorAll('.type-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            selectGoalType(type);
+        });
+    });
+    
+    // 이모지 선택 (이벤트 위임)
+    document.getElementById('emoji-picker').addEventListener('click', function(e) {
+        const option = e.target.closest('.emoji-option');
+        if (option) {
+            const iconName = option.getAttribute('data-icon');
+            selectEmoji(iconName);
+        }
+    });
+    
+    // goals-container에 대한 이벤트 위임
+    document.getElementById('goals-container').addEventListener('click', function(e) {
+        const target = e.target;
+        const goalId = parseInt(target.getAttribute('data-goal-id'));
+        const action = target.getAttribute('data-action');
+        
+        // 삭제 버튼
+        if (action === 'delete') {
+            e.stopPropagation();
+            deleteGoal(goalId);
+            return;
+        }
+        
+        // 수정 버튼
+        if (action === 'edit') {
+            e.stopPropagation();
+            editGoal(goalId);
+            return;
+        }
+        
+        // 하위 목표 토글
+        if (action === 'toggle-subtasks') {
+            e.stopPropagation();
+            toggleSubtasks(goalId);
+            return;
+        }
+        
+        // 통계 토글
+        if (action === 'toggle-stats') {
+            e.stopPropagation();
+            toggleStats(goalId);
+            return;
+        }
+        
+        // 수치 변경 버튼
+        const change = parseInt(target.getAttribute('data-change'));
+        if (!isNaN(change) && goalId) {
+            e.stopPropagation();
+            updateGoal(goalId, change);
+            return;
+        }
+        
+        // 하위 목표 체크박스
+        if (target.classList.contains('subtask-checkbox')) {
+            const subtaskId = parseInt(target.getAttribute('data-subtask-id'));
+            if (goalId && subtaskId) {
+                toggleSubtask(goalId, subtaskId);
+            }
+            return;
+        }
+        
+        // 하위 목표 삭제
+        if (target.classList.contains('subtask-delete')) {
+            e.stopPropagation();
+            const subtaskId = parseInt(target.getAttribute('data-subtask-id'));
+            if (goalId && subtaskId) {
+                deleteSubtask(goalId, subtaskId);
+            }
+            return;
+        }
+        
+        // 하위 목표 추가 버튼
+        if (target.classList.contains('add-subtask-btn')) {
+            e.stopPropagation();
+            if (goalId) {
+                addSubtask(goalId);
+            }
+            return;
+        }
+    });
+    
+    // 하위 목표 입력창에서 Enter 키
+    document.getElementById('goals-container').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.target.classList.contains('subtask-input')) {
+            const goalId = parseInt(e.target.getAttribute('data-goal-id'));
+            if (goalId) {
+                addSubtask(goalId);
+            }
+        }
+    });
+    
+    // 모달 외부 클릭시 닫기
+    document.getElementById('modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+});
