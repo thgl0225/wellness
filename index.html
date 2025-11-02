@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>목표 추적기</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-light">
+    <div class="header">
+        <h1>🎯 나의 목표</h1>
+        <div class="theme-selector">
+            <div class="theme-btn theme-light active" onclick="changeTheme('light')"></div>
+            <div class="theme-btn theme-ocean" onclick="changeTheme('ocean')"></div>
+            <div class="theme-btn theme-yellow" onclick="changeTheme('yellow')"></div>
+            <div class="theme-btn theme-dark" onclick="changeTheme('dark')"></div>
+            <div class="theme-btn theme-pink" onclick="changeTheme('pink')"></div>
+        </div>
+    </div>
+
+    <div class="summary-stats">
+        <div class="summary-item" id="total-goals">목표 0개</div>
+        <div class="summary-item" id="completed-goals">완료 0개</div>
+    </div>
+
+    <div class="sort-buttons">
+        <button class="sort-btn-main" onclick="toggleSortDropdown()">
+            <span id="sort-label">정렬: 기본</span>
+            <span>▼</span>
+        </button>
+        <div class="sort-dropdown" id="sort-dropdown">
+            <div class="sort-option" onclick="sortGoals('default', '기본')">기본 순서</div>
+            <div class="sort-option" onclick="sortGoals('progress', '진행률')">진행률 높은 순</div>
+            <div class="sort-option" onclick="sortGoals('name', '이름')">이름 순</div>
+        </div>
+    </div>
+
+    <div id="goals-container"></div>
+
+    <button class="add-goal-btn" onclick="openModal()">+ 새로운 목표</button>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-title">새 목표 만들기</div>
+            <div class="form-group">
+                <label class="form-label">목표 유형</label>
+                <div class="goal-type-selector">
+                    <div class="type-option selected" onclick="selectGoalType('numeric')" id="type-numeric">
+                        <div>📈 수치 목표</div>
+                        <div style="font-size: 9px; margin-top: 2px; opacity: 0.7;">0 → 100</div>
+                    </div>
+                    <div class="type-option" onclick="selectGoalType('checklist')" id="type-checklist">
+                        <div>📦 프로젝트</div>
+                        <div style="font-size: 9px; margin-top: 2px; opacity: 0.7;">할 일 목록</div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">아이콘 선택</label>
+                <div class="emoji-picker" id="emoji-picker"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">목표 이름</label>
+                <input type="text" id="goal-name" class="form-input" placeholder="예: 책 읽기">
+            </div>
+            <div class="form-group" id="numeric-fields">
+                <label class="form-label">현재 값</label>
+                <input type="number" id="goal-current" class="form-input" placeholder="0" value="0">
+                <label class="form-label" style="margin-top: 8px;">목표 값</label>
+                <input type="number" id="goal-target" class="form-input" placeholder="예: 12">
+            </div>
+            <div class="form-group">
+                <label class="form-label">메모 (선택)</label>
+                <textarea id="goal-memo" class="form-textarea" placeholder="목표에 대한 간단한 메모"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal()">취소</button>
+                <button class="btn-submit" onclick="saveGoal()">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
