@@ -8,9 +8,10 @@
         /* 변수 설정 - 강조 색상에 따라 동적으로 변경될 변수 정의 */
         :root {
             --accent-color: #e91e63;
-            --light-accent-color: #ff80ab;
+            /* **수정:** light-accent-color, very-light-color, hover-color는 JS에서 동적으로 HSL을 기반으로 생성 */
+            --light-accent-color: #ff80ab; 
             --very-light-color: #f8bbd0;
-            --hover-color: #fce4ec; /* 테마 색상 기반의 옅은 배경색 */
+            --hover-color: #fce4ec;
             --widget-background: rgba(255, 255, 255, 0.9);
             --text-color: #333;
         }
@@ -48,18 +49,16 @@
         /* 습관 목록 상단 (오늘 날짜 표시) */
         .today-header {
             font-size: 10px;
-            color: var(--light-accent-color);
+            color: var(--accent-color);
             text-align: center;
             margin-bottom: 10px;
             font-weight: 600;
-            /* 2. 오늘날짜 눌러도 아무 일 없도록 커서 default */
             cursor: default; 
             padding: 5px;
             border-radius: 6px;
             transition: background 0.2s;
         }
         .today-header:hover {
-            /* 2. hover 색상 제거 (클릭 기능이 없어졌으므로) */
             background: transparent; 
             color: var(--accent-color);
         }
@@ -96,7 +95,8 @@
         .checkbox {
             width: 16px;
             height: 16px;
-            border: 2px solid var(--very-light-color);
+            /* **수정:** 테두리 색상 조정 */
+            border: 2px solid var(--very-light-color); 
             border-radius: 50%;
             cursor: pointer;
             flex-shrink: 0;
@@ -108,7 +108,8 @@
             margin-right: 8px; 
         }
         .checkbox.checked {
-            background: linear-gradient(135deg, var(--light-accent-color) 0%, var(--accent-color) 100%);
+            /* **수정:** 그라데이션 제거, 단색으로 변경 */
+            background: var(--accent-color);
             border-color: var(--accent-color);
         }
         .checkbox.checked::after {
@@ -180,30 +181,42 @@
             color: var(--accent-color); 
         }
         
-        /* 진행률 섹션 디자인 */
+        /* 진행률 섹션 디자인 (세련되게 변경) */
         .progress-section {
-            margin-top: 15px;
-            padding-top: 5px; 
-            border-top: 1px solid var(--very-light-color); 
+            margin-top: 10px; 
+            padding-top: 0px; 
+            border-top: none; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 5px;
         }
+        
+        .progress-text {
+            font-size: 10px; 
+            color: #999; 
+            font-weight: 500; 
+            margin-bottom: 4px; 
+        }
+        
         .progress-bar-container {
-            height: 8px;
-            background-color: var(--hover-color);
-            border-radius: 4px;
+            height: 10px; 
+            background-color: transparent; 
+            border-radius: 5px; 
             overflow: hidden;
-            margin-bottom: 5px;
+            width: 100%;
+            border: 1px solid var(--very-light-color); 
         }
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--light-accent-color) 0%, var(--accent-color) 100%);
+            /* **수정:** 그라데이션 제거, 단색으로 변경 */
+            background: var(--accent-color);
             transition: width 0.5s ease-out;
+            border-radius: 5px; 
         }
-        .progress-text {
-            font-size: 10px;
-            color: var(--accent-color); 
-            text-align: center;
-            font-weight: 600; 
+        .progress-bar[style*="100%"] {
+             box-shadow: none; 
         }
 
         /* 설정 버튼 영역 */
@@ -262,12 +275,11 @@
 
         /* 모달 공통 스타일 */
         .modal {
-            /* 1. 모달이 컨테이너 크기 늘 일정 크기 유지하도록 수정 */
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; /* 부모 컨테이너(max-width 280px)를 가득 채움 */
+            height: 100%; 
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
             display: none;
@@ -375,9 +387,10 @@
 
         /* 요일 선택 버튼 - 선택된 상태 */
         .day-selection-group button.selected {
-            background: var(--light-accent-color);
+            /* **수정:** 그라데이션 제거, 단색으로 변경 */
+            background: var(--accent-color);
             color: white;
-            border-color: var(--light-accent-color);
+            border-color: var(--accent-color);
         }
         /* 토요일(6) 색상 강조 (선택되지 않았을 때) */
         .day-selection-group button[data-day="6"]:not(.selected) {
@@ -392,7 +405,8 @@
         #saveHabitBtn {
             width: 100%;
             padding: 8px;
-            background: var(--light-accent-color);
+            /* **수정:** 그라데이션 제거, 단색으로 변경 */
+            background: var(--accent-color);
             color: white;
             border: none;
             border-radius: 8px;
@@ -408,7 +422,7 @@
             box-shadow: 0 -4px 8px rgba(255, 255, 255, 0.9); 
         }
         #saveHabitBtn:hover {
-            background: var(--accent-color);
+            background: var(--light-accent-color); /* 호버 시 약간 연한 색으로 변경 */
         }
         
         /* 습관 초기화 팝업창 디자인 */
@@ -433,7 +447,8 @@
             margin-bottom: 12px;
         }
         .confirm-modal-buttons button {
-            background: var(--light-accent-color);
+            /* **수정:** 그라데이션 제거, 단색으로 변경 */
+            background: var(--accent-color);
             color: white;
             border: none;
             border-radius: 6px;
@@ -442,6 +457,9 @@
             cursor: pointer;
             margin: 0 4px;
             transition: background 0.2s;
+        }
+        .confirm-modal-buttons .confirm-yes:hover {
+            background: var(--light-accent-color); /* 호버 시 약간 연한 색으로 변경 */
         }
         .confirm-modal-buttons .confirm-no {
             background: #ccc;
@@ -456,10 +474,10 @@
         <div id="habitList"></div>
         
         <div class="progress-section">
+             <div class="progress-text" id="progressText">0/0</div>
             <div class="progress-bar-container">
                 <div class="progress-bar" id="progressBar"></div>
             </div>
-            <div class="progress-text" id="progressText">0/0</div>
         </div>
 
         <div class="settings-btn-area">
@@ -521,11 +539,7 @@
 
     <script>
         // --- 데이터 구조 및 로컬 스토리지 관리 ---
-        const DEFAULT_HABITS = [
-            { id: 1, icon: '☕', name: '아침 커피 마시기', frequency: 'daily', days: [], count: 0 },
-            { id: 2, icon: '🏃', name: '주 3회 달리기', frequency: 'weekly_count', days: [], count: 3 },
-            { id: 3, icon: '📖', name: '수/금 독서', frequency: 'weekly_days', days: [3, 5], count: 0 }
-        ];
+        const DEFAULT_HABITS = [];
         
         let habits = JSON.parse(localStorage.getItem('habits')) || DEFAULT_HABITS;
         let nextId = habits.length > 0 ? Math.max(...habits.map(h => h.id)) + 1 : 1;
@@ -554,7 +568,7 @@
             localStorage.setItem('habitHistory', JSON.stringify(history));
         }
 
-        // --- 색상 동적 변경 로직 ---
+        // --- 색상 동적 변경 로직 (HSL을 이용한 명도 조절로 그라데이션 대신 연한 색 생성) ---
         const hexToHsl = (H) => { 
             var r = 0, g = 0, b = 0;
             if (H.length == 4) {
@@ -584,7 +598,6 @@
                 }
                 h /= 6;
             }
-            // HSL 값 반환
             return [h * 360, s * 100, l * 100];
         };
         const hslToHex = (h, s, l) => { 
@@ -626,14 +639,15 @@
         function changeAccentColor(newColor) {
             const [h, s, l] = hexToHsl(newColor);
             
-            // lightAccent: 명도 +15 (최대 100)
-            const lightAccent = hslToHex(h, s, Math.min(100, l + 15)); 
+            // **수정:** 명도(lightness)만 조절하여 연한 색상을 생성
+            // lightAccent: 명도 +20% (최대 100)
+            const lightAccent = hslToHex(h, s, Math.min(100, l + 20)); 
             
-            // veryLightColor: 채도 40%로 낮추고 명도 88
-            const veryLightColor = hslToHex(h, Math.min(100, s * 0.4), 88); 
+            // veryLightColor: 명도 +45% (최대 100)
+            const veryLightColor = hslToHex(h, s, Math.min(100, l + 45)); 
             
-            // hoverColor: 채도 10%로 대폭 낮추고 명도 96으로 높여 매우 연하게 조정
-            const hoverColor = hslToHex(h, Math.min(100, s * 0.1), 96); 
+            // hoverColor: 명도 +50% (최대 100)
+            const hoverColor = hslToHex(h, s, Math.min(100, l + 50)); 
             
             document.documentElement.style.setProperty('--accent-color', newColor);
             document.documentElement.style.setProperty('--light-accent-color', lightAccent);
@@ -782,7 +796,7 @@
 
             const totalDueItems = dailyDueHabits.length;
             if (totalDueItems === 0) {
-                document.getElementById('progressText').textContent = '0/0';
+                document.getElementById('progressText').textContent = '습관을 추가하여 오늘 목표를 설정해보세요.';
                 document.getElementById('progressBar').style.width = '0%';
                 return;
             }
@@ -798,7 +812,7 @@
             setTimeout(() => {
                 document.getElementById('progressBar').style.width = percentage + '%';
             }, 0);
-            document.getElementById('progressText').textContent = `${checkedItems}/${totalDueItems}`;
+            document.getElementById('progressText').textContent = `오늘 달성률: ${percentage}% (${checkedItems}/${totalDueItems})`;
         }
 
         // --- 습관 추가/편집 모달 로직 ---
