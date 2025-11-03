@@ -11,7 +11,7 @@
             --light-accent-color: #ff80ab; 
             --very-light-color: #f8bbd0;
             --hover-color: #fce4ec;
-            --separator-color: #f0f0f0; /* CSS에서 동적으로 변경됨 */
+            --separator-color: #f0f0f0; 
             --widget-background: rgba(255, 255, 255, 0.9);
             --text-color: #333;
         }
@@ -42,7 +42,8 @@
             width: 100%;
             max-width: 280px;
             box-shadow: none; 
-            border: 1px solid var(--very-light-color);
+            /* 1. **수정:** 사각형 외곽선 제거 */
+            border: none;
             position: relative;
         }
 
@@ -58,28 +59,34 @@
             border-radius: 6px;
         }
         
+        /* 2. **수정:** 습관 목록 최소 높이 설정 (빈 상태에서 공간 유지) */
+        #habitList {
+            min-height: 80px; /* 약 3~4개의 습관이 들어갈 수 있는 높이 */
+        }
+        
         /* 습관 항목 */
         .habit-item {
             display: flex;
             align-items: center;
             justify-content: space-between; 
-            /* 2. 습관 하나당 공간 축소 (8px -> 4px) */
             padding: 4px 0; 
             background: transparent;
             border-radius: 8px;
             margin-bottom: 0;
             transition: all 0.3s ease;
             
-            /* 1, 2. 구분선 스타일 (연한 실선) + 마지막 항목 포함 */
             border-bottom: 1px solid var(--separator-color);
             
             padding-left: 8px; 
             padding-right: 8px; 
             margin-left: -8px; 
             margin-right: -8px;
+            
+            cursor: grab; /* 3. 드래그 가능함을 시각적으로 표시 */
         }
-        /* 이전 요청: 마지막 항목 구분선 제거 규칙 삭제 (제거됨) */
-        /* .habit-item:last-child { border-bottom: none; } */
+        .habit-item:active {
+             cursor: grabbing;
+        }
         
         .habit-item:hover { 
             background: var(--hover-color);
@@ -89,9 +96,20 @@
             pointer-events: none;
         }
 
+        /* 3. **추가:** 드래그 앤 드롭 CSS */
+        .habit-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+            border: 2px dashed var(--accent-color);
+            padding: 2px 8px; 
+            background: var(--hover-color);
+        }
+        .habit-item.drag-over {
+            box-shadow: 0 4px 0 -2px var(--accent-color) inset; /* 드롭 존 시각적 표시 */
+        }
+
         /* 체크 표시 디자인 */
         .checkbox {
-            /* 1. 체크박스 크기 축소 (20px -> 16px) */
             width: 16px;
             height: 16px;
             border: 2px solid var(--accent-color); 
@@ -103,49 +121,26 @@
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background-color: white; 
-            /* 여백 축소 (12px -> 8px) */
             margin-right: 8px; 
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        .checkbox:hover { 
-            transform: scale(1.1); 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .checkbox.checked { 
-            background: var(--accent-color); 
-            border-color: var(--accent-color); 
-            transform: scale(1.05);
-        }
+        .checkbox:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .checkbox.checked { background: var(--accent-color); border-color: var(--accent-color); transform: scale(1.05); }
         .checkbox.checked::after {
-            content: '';
-            width: 3px; /* 체크표시 크기 조정 */
-            height: 7px; /* 체크표시 크기 조정 */
-            border: solid white;
-            border-width: 0 2px 2px 0; 
-            transform: rotate(45deg) translate(-1px, 0px); 
-            display: block;
-            margin-top: -1px;
+            content: ''; width: 3px; height: 7px; border: solid white;
+            border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, 0px); 
+            display: block; margin-top: -1px;
         }
         
         .habit-editable-area { display: flex; align-items: center; flex: 1; padding: 4px 0; cursor: pointer; min-width: 0; }
         .habit-info { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
         .habit-name-group { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 
-        /* 3. 습관명 폰트 크기 축소 (13px -> 11px) */
         .habit-name { 
-            font-size: 11px; 
-            color: var(--text-color); 
-            font-weight: 600;
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
-            letter-spacing: -0.01em; 
+            font-size: 11px; color: var(--text-color); font-weight: 600;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em; 
         }
-        
-        .habit-frequency { 
-            font-size: 9px;
-            color: #999; 
-        }
+        .habit-frequency { font-size: 9px; color: #999; }
 
         /* 삭제 버튼 */
         .delete-btn { background: transparent; color: rgba(255, 0, 0, 0.4); border: none; font-size: 12px; cursor: pointer; transition: color 0.2s, opacity 0.3s; padding: 4px; line-height: 1; opacity: 0; z-index: 1; flex-shrink: 0; margin-left: 5px; }
@@ -166,17 +161,9 @@
         /* 색상 선택 버튼 */
         #colorIcon { width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px var(--very-light-color); pointer-events: none; }
         .color-change-btn { padding: 8px; position: relative; }
-        
-        /* **색상 변경 오류 수정: z-index 추가** */
         .color-change-btn input[type="color"] { 
-            position: absolute; 
-            top: 0; 
-            left: 0;
-            width: 100%; 
-            height: 100%; 
-            opacity: 0; 
-            cursor: pointer; 
-            z-index: 100; /* 클릭 이벤트가 가로막히지 않도록 최상단으로 설정 */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            opacity: 0; cursor: pointer; z-index: 100;
         }
         
         /* 모달 스타일 (생략) */
@@ -294,17 +281,12 @@
             localStorage.setItem('habitHistory', JSON.stringify(history));
         }
 
-        // HSL/Hex 변환 함수 (유지)
         const hexToHsl = (H) => { 
             var r = 0, g = 0, b = 0;
             if (H.length == 4) {
-                r = parseInt(H[1]+H[1], 16);
-                g = parseInt(H[2]+H[2], 16);
-                b = parseInt(H[3]+H[3], 16);
+                r = parseInt(H[1]+H[1], 16); g = parseInt(H[2]+H[2], 16); b = parseInt(H[3]+H[3], 16);
             } else if (H.length == 7) {
-                r = parseInt(H[1]+H[2], 16);
-                g = parseInt(H[3]+H[4], 16);
-                b = parseInt(H[5]+H[6], 16);
+                r = parseInt(H[1]+H[2], 16); g = parseInt(H[3]+H[4], 16); b = parseInt(H[5]+H[6], 16);
             }
             r /= 255; g /= 255; b /= 255;
             var max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -337,8 +319,7 @@
                 };
                 var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
                 var p = 2 * l - q; 
-                r = hue2rgb(p, q, h + 1/3); 
-                g = hue2rgb(p, q, h);
+                r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h);
                 b = hue2rgb(p, q, h - 1/3); 
             } 
             var toHex = function(c) { 
@@ -369,25 +350,9 @@
             renderHabits();
         }
 
-        // 나머지 함수들 (sortHabits, isHabitDueToday, getWeeklyCountProgress, getFrequencyText, renderHabits, toggleHabit, updateProgress, 모달 관련 함수 등)은 기존 로직을 유지합니다.
+        /* 3. **수정:** 자동 정렬(sortHabits) 기능 제거 */
+        /* function sortHabits(habits) { ... } */
         
-        function sortHabits(habits) { /* ... 로직 유지 ... */
-            const todayChecks = history[TODAY_KEY] || {};
-            return habits.sort((a, b) => { 
-                const getPriority = (habit) => { 
-                    const freq = habit.frequency; 
-                    const isDue = isHabitDueToday(habit); 
-                    const isChecked = todayChecks[habit.id]; 
-                    let basePriority = 99; 
-                    if (freq === 'daily') basePriority = 10; 
-                    else if (freq === 'weekly_days' && isDue) basePriority = 20; 
-                    else if (freq === 'weekly_count') basePriority = 30; 
-                    else if (freq === 'weekly_days' && !isDue) basePriority = 40; 
-                    return basePriority + (isChecked ? 1 : 0); 
-                }; 
-                return getPriority(a) - getPriority(b); 
-            });
-        }
         function isHabitDueToday(habit) { 
             if (habit.frequency === 'daily') return true;
             if (habit.frequency === 'weekly_days') return habit.days && habit.days.includes(TODAY_DAY); 
@@ -420,18 +385,24 @@
             if (habit.frequency === 'weekly_count') return getWeeklyCountProgress(habit.id, habit.count); 
             return '[주기 미설정]';
         }
+        
         function renderHabits() { 
             const habitList = document.getElementById('habitList'); 
             habitList.innerHTML = '';
-            const sortedHabits = sortHabits(habits); 
+            
+            /* 3. **수정:** habits 배열에 저장된 순서 그대로 렌더링 */
+            const habitsToRender = habits; 
             const todayChecks = history[TODAY_KEY] || {};
             
-            sortedHabits.forEach(habit => { 
+            habitsToRender.forEach(habit => { 
                 const isDue = isHabitDueToday(habit); 
                 const isChecked = todayChecks[habit.id] || false; 
                 const isNotDue = !isDue && habit.frequency !== 'weekly_count'; 
+                
                 const habitItem = document.createElement('div'); 
                 habitItem.className = `habit-item ${isNotDue ? 'not-due' : ''}`; 
+                habitItem.setAttribute('draggable', 'true'); /* 3. 드래그 가능 속성 추가 */
+                habitItem.setAttribute('data-id', habit.id); /* 3. 드래그 식별자 추가 */
                 
                 habitItem.innerHTML = `
                     <div style="display: flex; align-items: center;">
@@ -450,13 +421,73 @@
                     </div>
                     <button class="delete-btn" onclick="event.stopPropagation(); confirmDelete(${habit.id})" title="삭제">x</button>
                 `; 
+                
+                /* 3. 드래그 앤 드롭 이벤트 리스너 추가 */
+                habitItem.addEventListener('dragstart', handleDragStart);
+                habitItem.addEventListener('dragover', handleDragOver);
+                habitItem.addEventListener('drop', handleDrop);
+                habitItem.addEventListener('dragenter', handleDragEnter);
+                habitItem.addEventListener('dragleave', handleDragLeave);
                 habitList.appendChild(habitItem); 
             });
             
             updateProgress(); 
             saveState(); 
         }
-        
+
+        /* 3. **추가:** 드래그 앤 드롭 핸들러 */
+        let draggedHabitId = null;
+
+        function handleDragStart(e) {
+            draggedHabitId = parseInt(e.currentTarget.getAttribute('data-id'));
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedHabitId);
+            setTimeout(() => e.currentTarget.classList.add('dragging'), 0);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const target = e.currentTarget;
+            if (target.classList.contains('habit-item') && parseInt(target.getAttribute('data-id')) !== draggedHabitId) {
+                // 기존의 drag-over 클래스를 제거하고 현재 대상에 추가
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const target = e.currentTarget;
+            const targetId = parseInt(target.getAttribute('data-id'));
+            
+            // 모든 드래그 관련 클래스 제거
+            document.querySelectorAll('.dragging, .drag-over').forEach(el => el.classList.remove('dragging', 'drag-over'));
+            
+            if (draggedHabitId === targetId) return;
+
+            const sourceIndex = habits.findIndex(h => h.id === draggedHabitId);
+            const targetIndex = habits.findIndex(h => h.id === targetId);
+
+            if (sourceIndex > -1 && targetIndex > -1) {
+                // 배열에서 습관을 이동
+                const [movedHabit] = habits.splice(sourceIndex, 1);
+                habits.splice(targetIndex, 0, movedHabit);
+                
+                // 새로운 순서로 리렌더링
+                renderHabits();
+            }
+            draggedHabitId = null;
+        }
+
         function toggleHabit(id) { 
             const habit = habits.find(h => h.id === id);
             if (!habit) return; 
